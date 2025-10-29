@@ -4,6 +4,7 @@ use std::{
     process::{exit, Command},
 };
 
+#[derive(Debug, PartialEq)]
 enum CommandType {
     Builtin,
     External,
@@ -146,5 +147,51 @@ fn main() {
         f.print_prompt();
         let command_input = f.read_user_input();
         f.execute_command(command_input);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::str::FromStr;
+
+    use super::*;
+
+    #[test]
+    fn test_parse_input() {
+        let f = Fesh {
+            prompt: String::from("fesh> "),
+        };
+
+        let mut test_input: String = "ls -lah".to_string();
+
+        match f.parse_input(test_input) {
+            Ok(c) => {
+                assert_eq!(c.command_type, CommandType::External);
+                assert_eq!(c.command, "ls".to_string());
+                assert_eq!(c.args, vec!["-lah"])
+            }
+            Err(_) => todo!(),
+        }
+
+        test_input = "cmd -ta -i file.txt -o out.txt".to_string();
+
+        match f.parse_input(test_input) {
+            Ok(c) => {
+                assert_eq!(c.command_type, CommandType::External);
+                assert_eq!(c.command, "cmd".to_string());
+                assert_eq!(c.args, vec!["-ta", "-i", "file.txt", "-o", "out.txt"])
+            }
+            Err(_) => todo!(),
+        }
+
+        test_input = "exit".to_string();
+
+        match f.parse_input(test_input) {
+            Ok(c) => {
+                assert_eq!(c.command_type, CommandType::Builtin);
+                assert_eq!(c.command, "exit".to_string());
+            }
+            Err(_) => todo!(),
+        }
     }
 }
