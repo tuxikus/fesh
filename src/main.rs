@@ -16,6 +16,7 @@ struct CommandInput {
     args: Vec<String>,
 }
 
+#[derive(Debug, PartialEq)]
 enum CommandInputError {
     Empty,
     UnableToParse,
@@ -157,12 +158,12 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_parse_input() {
+    fn test_parse_input_external_basic() {
         let f = Fesh {
-            prompt: String::from("fesh> "),
+            prompt: String::from(""),
         };
 
-        let mut test_input: String = "ls -lah".to_string();
+        let test_input: String = "ls -lah".to_string();
 
         match f.parse_input(test_input) {
             Ok(c) => {
@@ -172,8 +173,31 @@ mod tests {
             }
             Err(_) => todo!(),
         }
+    }
 
-        test_input = "cmd -ta -i file.txt -o out.txt".to_string();
+        #[test]
+    fn test_parse_input_empty() {
+        let f = Fesh {
+            prompt: String::from(""),
+        };
+
+        let test_input: String = "".to_string();
+
+        match f.parse_input(test_input) {
+            Ok(c) => todo!(),
+            Err(e) => {
+                assert_eq!(e, CommandInputError::Empty)
+            },
+        }
+    }
+
+    #[test]
+    fn test_parse_input_external_complex() {
+        let f = Fesh {
+            prompt: String::from("fesh> "),
+        };
+
+        let test_input: String = "cmd -ta -i file.txt -o out.txt".to_string();
 
         match f.parse_input(test_input) {
             Ok(c) => {
@@ -183,8 +207,15 @@ mod tests {
             }
             Err(_) => todo!(),
         }
+    }
 
-        test_input = "exit".to_string();
+    #[test]
+    fn test_parse_input_bulitin_exit() {
+        let f = Fesh {
+            prompt: String::from("fesh> "),
+        };
+
+        let test_input: String = "exit".to_string();
 
         match f.parse_input(test_input) {
             Ok(c) => {
@@ -193,5 +224,6 @@ mod tests {
             }
             Err(_) => todo!(),
         }
+        
     }
 }
