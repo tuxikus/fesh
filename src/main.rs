@@ -1,6 +1,6 @@
 use std::{
     fmt,
-    io::{stdin, stdout, Write},
+    io::{self, stdin, stdout, Write},
     process::{exit, Command},
 };
 
@@ -36,16 +36,26 @@ struct Fesh {
 }
 
 impl Fesh {
-    fn print_prompt(&self) {
-        let prompt: &[u8] = self.prompt.as_bytes();
-        if let Err(e) = stdout().write_all(prompt) {
+    fn print_prompt_to<W: Write>(&self, mut writer: W) -> io::Result<()> {
+        if let Err(e) = writer.write_all(self.prompt.as_bytes()) {
             eprintln!("failed to write prompt: {e}");
-            return;
-        };
+            return Err(e);
+        }
 
-        if let Err(e) = stdout().flush() {
-            eprintln!("failed to flush stdout: {e}")
-        };
+        if let Err(e) = writer.flush() {
+            eprintln!("failed to flush stdout: {e}");
+            return Err(e);
+        }
+
+        Ok(())
+    }
+
+    fn print_prompt(&self) {
+        match self.print_prompt_to(std::io::stdout()) {
+            // TODO: ???
+            Ok(_) => {}
+            Err(_) => {}
+        }
     }
 
     fn read_user_input(&self) -> CommandInput {
@@ -153,9 +163,20 @@ fn main() {
 
 #[cfg(test)]
 mod tests {
-    use std::str::FromStr;
-
+    use std::io::Cursor;
     use super::*;
+
+    #[test]
+    fn test_print_prompt_to() {
+        let f = Fesh {
+            prompt: String::from(">"),
+        };
+        let mut buffer = Cursor::new(Vec::new());
+
+        f.print_prompt_to(&mut buffer).unwrap();
+
+        assert_eq!(String::from_utf8(buffer.into_inner()).unwrap(), ">");
+    }
 
     #[test]
     fn test_parse_input_external_basic() {
@@ -175,7 +196,7 @@ mod tests {
         }
     }
 
-        #[test]
+    #[test]
     fn test_parse_input_empty() {
         let f = Fesh {
             prompt: String::from(""),
@@ -187,7 +208,7 @@ mod tests {
             Ok(c) => todo!(),
             Err(e) => {
                 assert_eq!(e, CommandInputError::Empty)
-            },
+            }
         }
     }
 
@@ -224,6 +245,5 @@ mod tests {
             }
             Err(_) => todo!(),
         }
-        
     }
 }
