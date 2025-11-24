@@ -1,11 +1,12 @@
-mod command;
-mod fesh;
-mod history_writer;
-mod input_parser;
-mod input_reader;
-mod logger;
-mod mode;
-mod prompt;
+// this tells the compile to include the files
+pub mod command; // command/*
+pub mod fesh; // fesh.rs
+pub mod history_writer; // history_writer.rs
+pub mod input_parser; // input_parser.rs
+pub mod input_reader; // input_reader.rs
+pub mod logger; // logger.rs
+pub mod mode; // mode.rs
+pub mod prompt; // prompt.rs
 
 use clap::Parser;
 use fesh::Fesh;

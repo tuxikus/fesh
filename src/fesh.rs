@@ -2,8 +2,10 @@ use std::process::Command as SysCommand;
 use std::process::Stdio;
 use std::process::exit;
 
-use crate::command;
-use crate::command::CommandList;
+use crate::command::command;
+use crate::command::command_list::CommandList;
+use crate::command::command_type::CommandType;
+use crate::command::operator::Operator;
 use crate::input_parser;
 use crate::input_reader;
 use crate::logger;
@@ -43,7 +45,7 @@ impl Fesh {
     pub fn run(&mut self) {
         loop {
             let input: String = self.input_reader.readline(self.prompt.get().clone());
-            let command_list: command::CommandList = match self.input_parser.parse(input) {
+            let command_list: CommandList = match self.input_parser.parse(input) {
                 Ok(c) => c,
                 Err(_) => continue,
             };
@@ -54,7 +56,7 @@ impl Fesh {
     // currently only first command can be a builtin
     fn check_first_builtin(&self, command_list: &CommandList) {
         if let Some(first_command) = command_list.commands.first() {
-            if first_command.command_type == command::CommandType::Builtin {
+            if first_command.command_type == CommandType::Builtin {
                 self.execute_buitin(first_command.clone());
                 return;
             }
@@ -91,7 +93,7 @@ impl Fesh {
         }
     }
 
-    fn check_no_operators(&self, command_list: &command::CommandList) {
+    fn check_no_operators(&self, command_list: &CommandList) {
         if command_list.operators.is_empty() {
             println!("no operators");
             if let Some(command) = command_list.commands.first() {
@@ -101,7 +103,7 @@ impl Fesh {
         }
     }
 
-    pub fn execute_command_list(&self, command_list: command::CommandList) {
+    pub fn execute_command_list(&self, command_list: CommandList) {
         self.check_first_builtin(&command_list);
         //self.check_no_operators(&command_list);
 
@@ -124,7 +126,7 @@ impl Fesh {
             }
 
             match operator {
-                Some(command::operator::Operator::Pipe) => {
+                Some(Operator::Pipe) => {
                     cmd.stdout(Stdio::piped());
                 }
                 None => {
@@ -143,7 +145,7 @@ impl Fesh {
                 }
             };
 
-            if operator == Some(&command::operator::Operator::Pipe) {
+            if operator == Some(&Operator::Pipe) {
                 if let Some(stdout) = child.stdout.take() {
                     prev_stdout = Some(Stdio::from(stdout));
                 }

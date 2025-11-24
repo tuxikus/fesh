@@ -1,16 +1,18 @@
-use crate::command;
+use crate::command::command::Command;
+use crate::command::command_error::CommandError;
+use crate::command::command_list::CommandList;
 use crate::command::operator::Operator;
 
 pub struct InputParser;
 
 impl InputParser {
-    pub fn parse(&self, input: String) -> Result<command::CommandList, command::CommandError> {
+    pub fn parse(&self, input: String) -> Result<CommandList, CommandError> {
         let operator_set = ["|", ">", ">>"];
-        let mut commands: Vec<command::Command> = Vec::new();
+        let mut commands: Vec<Command> = Vec::new();
         let mut operators: Vec<Operator> = Vec::new();
 
         if input.is_empty() {
-            return Err(command::CommandError::Empty);
+            return Err(CommandError::Empty);
         }
 
         let mut current_cmd: Vec<String> = Vec::new();
@@ -20,8 +22,7 @@ impl InputParser {
         for part in parts {
             if operator_set.contains(&part) {
                 if !current_cmd.is_empty() {
-                    let cmd =
-                        command::Command::new(current_cmd[0].clone(), current_cmd[1..].to_vec());
+                    let cmd = Command::new(current_cmd[0].clone(), current_cmd[1..].to_vec());
                     commands.push(cmd);
                     current_cmd.clear();
                 }
@@ -38,18 +39,18 @@ impl InputParser {
         }
 
         if !current_cmd.is_empty() {
-            let cmd = command::Command::new(current_cmd[0].clone(), current_cmd[1..].to_vec());
+            let cmd = Command::new(current_cmd[0].clone(), current_cmd[1..].to_vec());
             commands.push(cmd);
         }
 
-        Ok(command::CommandList::new(commands, operators))
+        Ok(CommandList::new(commands, operators))
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::command::CommandType;
+    use crate::command::command_type::CommandType;
 
     #[test]
     fn test_parse_empty_input() {
@@ -57,7 +58,7 @@ mod tests {
         let result = parser.parse(String::from(""));
         assert!(result.is_err());
         if let Err(e) = result {
-            assert_eq!(e, command::CommandError::Empty);
+            assert_eq!(e, CommandError::Empty);
         }
     }
 
