@@ -1,6 +1,7 @@
 use crate::command::command::Command;
 use crate::command::operator::Operator;
 
+#[derive(Debug, PartialEq)]
 pub struct CommandList {
     pub commands: Vec<Command>,
     pub operators: Vec<Operator>,

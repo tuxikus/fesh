@@ -4,15 +4,18 @@ use rustyline::DefaultEditor;
 use rustyline::error::ReadlineError;
 
 use crate::history_writer;
+use crate::logger;
 
 pub struct InputReader {
-    history_writer: history_writer::HistoryWriter,
+    pub history_writer: history_writer::HistoryWriter,
+    pub logger: logger::Logger,
 }
 
 impl InputReader {
     pub fn new() -> Self {
         InputReader {
             history_writer: history_writer::HistoryWriter::new(),
+            logger: logger::Logger::new(false),
         }
     }
 
@@ -39,6 +42,8 @@ impl InputReader {
                 //     }
                 //     Err(e) => eprintln!("+command not added to history: {e}"),
                 // }
+
+                self.logger.print_debug(String::from("InputReader"), format!("got line: {line}"));
 
                 self.history_writer.write(&line);
 

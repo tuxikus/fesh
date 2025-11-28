@@ -5,6 +5,7 @@
 - Pipes `|`: `find . | wc -l`
 - Redirects `> >>`: `echo hello-world > file.txt`
 - History
+- Builtins: `exit`, `+debug`
 
 ## Run the unit tests
 ```shell
