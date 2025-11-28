@@ -5,6 +5,7 @@ use rustyline::error::ReadlineError;
 
 use crate::history_writer;
 use crate::logger;
+use crate::prompt;
 
 pub struct InputReader {
     pub history_writer: history_writer::HistoryWriter,
@@ -19,7 +20,7 @@ impl InputReader {
         }
     }
 
-    pub fn readline(&self, prompt: String) -> String {
+    pub fn readline(&self, prompt: &prompt::Prompt) -> String {
         let mut rl = match DefaultEditor::new() {
             Ok(v) => v,
             Err(e) => {
@@ -32,23 +33,9 @@ impl InputReader {
             eprintln!("+no previous history found");
         }
 
-        let readline = rl.readline(&prompt);
+        let readline = rl.readline(&prompt.get_colored_prompt());
         match readline {
-            Ok(line) => {
-                // not working...
-                // match rl.add_history_entry(line.as_str()) {
-                //     Ok(v) => {
-                //         println!("+command added to history: {v}");
-                //     }
-                //     Err(e) => eprintln!("+command not added to history: {e}"),
-                // }
-
-                self.logger.print_debug(String::from("InputReader"), format!("got line: {line}"));
-
-                self.history_writer.write(&line);
-
-                line
-            }
+            Ok(line) => line,
             // Ctrl + d
             Err(ReadlineError::Eof) => {
                 match rl.save_history("history.txt") {

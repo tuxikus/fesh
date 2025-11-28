@@ -10,39 +10,25 @@ use crate::command::operator::Operator;
 use crate::file_writer;
 use crate::input_parser;
 use crate::input_reader;
+use crate::config;
 use crate::logger;
-use crate::mode;
-use crate::prompt;
 
 pub struct Fesh {
-    mode: mode::Mode,
-    prompt: prompt::Prompt,
-    logger: logger::Logger,
+    config: config::Config,
     input_reader: input_reader::InputReader,
     input_parser: input_parser::InputParser,
     file_writer: file_writer::FileWriter,
+    logger: logger::Logger,
 }
 
 impl Fesh {
-    pub fn new(prompt: String, mode_char: char) -> Self {
-        let mode = match mode_char {
-            'd' => mode::Mode::Debug,
-            _ => mode::Mode::Interactive,
-        };
-
-        let logger_enabled = if mode == mode::Mode::Debug {
-            true
-        } else {
-            false
-        };
-
+    pub fn new(config: config::Config) -> Self {
         Fesh {
-            mode,
-            prompt: prompt::Prompt::new(prompt),
-            logger: logger::Logger::new(logger_enabled),
+            config: config,
             input_reader: input_reader::InputReader::new(),
             input_parser: input_parser::InputParser::new(),
             file_writer: file_writer::FileWriter::new(),
+            logger: logger::Logger::new(false),
         }
     }
 
@@ -52,12 +38,11 @@ impl Fesh {
         self.input_parser.logger.toggle_debug();
         self.input_reader.history_writer.logger.toggle_debug();
         self.file_writer.logger.toggle_debug();
-        self.logger.toggle_debug();
     }
 
     pub fn run(&mut self) {
         loop {
-            let input: String = self.input_reader.readline(self.prompt.get().clone());
+            let input: String = self.input_reader.readline(&self.config.prompt);
             let command_list: CommandList = match self.input_parser.parse(input) {
                 Ok(c) => c,
                 Err(_) => continue,

@@ -6,8 +6,9 @@ pub mod history_writer; // history_writer.rs
 pub mod input_parser; // input_parser.rs
 pub mod input_reader; // input_reader.rs
 pub mod logger; // logger.rs
-pub mod mode; // mode.rs
 pub mod prompt; // prompt.rs
+pub mod config_parser; // config_parser.rs
+pub mod config; // config.rs
 
 use clap::Parser;
 use fesh::Fesh;
@@ -25,14 +26,10 @@ fn parse_args() -> Args {
 }
 
 fn main() {
-    let args = parse_args();
+    let _args = parse_args();
 
-    // TODO: use enum instead of chars
-    let mode = match args.mode {
-        Some(m) => m,
-        None => '-',
-    };
-
-    let mut fesh = Fesh::new(String::from("fesh> "), mode);
+    let config = config_parser::ConfigParser::new().read().unwrap();
+    let mut fesh = Fesh::new(config);
     fesh.run();
 }
+

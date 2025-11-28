@@ -1,0 +1,6 @@
+[prompt]
+text = "$ "
+color = "red"
+show_cwd = true
+show_username = false
+show_branch = false
