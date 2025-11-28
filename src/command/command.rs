@@ -10,7 +10,7 @@ pub struct Command {
 impl Command {
     pub fn new(command: String, args: Vec<String>) -> Self {
         let command_type = match command.as_str() {
-            "exit" | "+debug" => CommandType::Builtin,
+            "exit" | "+debug" | "cd" => CommandType::Builtin,
             _ => CommandType::External,
         };
 

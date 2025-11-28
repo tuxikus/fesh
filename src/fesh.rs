@@ -81,6 +81,23 @@ impl Fesh {
     fn execute_buitin(&mut self, command_input: command::Command) -> bool {
         self.logger.print_debug(String::from("Fesh"), format!("executing builtin: {}", command_input.command));
         match command_input.command.as_str() {
+            "cd" => {
+                if command_input.args.is_empty() {
+                    self.logger.print_error(format!("cd: no argument provided"));
+                    return false;
+                }
+                let path = path::Path::new(&command_input.args[0]);
+                if !path.is_dir() {
+                    self.logger.print_error(format!("cd: {:?} is not a directory", path));
+                    return false;
+                }
+                if let Err(e) = std::env::set_current_dir(path) {
+                    self.logger.print_error(format!("cd: failed to change directory: {e}"));
+                    return false;
+                }
+                self.logger.print_debug(String::from("Fesh"), format!("changed directory to: {}", path.display()));
+                return true;
+            },
             "exit" => {
                 exit(0);
             }
