@@ -1,6 +1,7 @@
 // this tells the compile to include the files
 pub mod command; // command/*
 pub mod fesh; // fesh.rs
+pub mod file_writer; // file_writer.rs
 pub mod history_writer; // history_writer.rs
 pub mod input_parser; // input_parser.rs
 pub mod input_reader; // input_reader.rs

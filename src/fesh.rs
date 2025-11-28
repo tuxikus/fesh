@@ -1,11 +1,13 @@
+use std::path;
+use std::process::exit;
 use std::process::Command as SysCommand;
 use std::process::Stdio;
-use std::process::exit;
 
 use crate::command::command;
 use crate::command::command_list::CommandList;
 use crate::command::command_type::CommandType;
 use crate::command::operator::Operator;
+use crate::file_writer;
 use crate::input_parser;
 use crate::input_reader;
 use crate::logger;
@@ -18,6 +20,7 @@ pub struct Fesh {
     logger: logger::Logger,
     input_reader: input_reader::InputReader,
     input_parser: input_parser::InputParser,
+    file_writer: file_writer::FileWriter,
 }
 
 impl Fesh {
@@ -39,6 +42,7 @@ impl Fesh {
             logger: logger::Logger::new(logger_enabled),
             input_reader: input_reader::InputReader::new(),
             input_parser: input_parser::InputParser {}, // TODO: add new fn
+            file_writer: file_writer::FileWriter::new(),
         }
     }
 
@@ -109,8 +113,14 @@ impl Fesh {
 
         let mut prev_stdout: Option<Stdio> = None;
         let mut children = Vec::new();
+        let mut skip_next = false;
 
         for (i, command) in command_list.commands.iter().enumerate() {
+            if skip_next {
+                skip_next = false;
+                continue;
+            }
+
             let operator = command_list.operators.get(i);
 
             let mut cmd = SysCommand::new(&command.command);
@@ -118,7 +128,6 @@ impl Fesh {
                 cmd.args(&command.args);
             }
 
-            // Set stdin from previous command's stdout (for pipes)
             if let Some(stdin) = prev_stdout.take() {
                 cmd.stdin(stdin);
             } else {
@@ -129,11 +138,46 @@ impl Fesh {
                 Some(Operator::Pipe) => {
                     cmd.stdout(Stdio::piped());
                 }
+                Some(Operator::RedirectOverwrite) => {
+                    let path = path::Path::new(&command_list.commands.get(i + 1).unwrap().command);
+                    cmd.stdout(Stdio::piped());
+                    let output = match cmd.output() {
+                        Ok(o) => o,
+                        Err(e) => {
+                            eprintln!("+ error while redirect: {e:?}");
+                            return;
+                        }
+                    };
+                    let output_str = String::from_utf8_lossy(&output.stdout);
+                    if let Err(e) = self.file_writer.overwrite_file(path, &output_str) {
+                        eprintln!("+ error writing to file: {e:?}");
+                        return;
+                    }
+
+                    skip_next = true;
+                    continue;
+                }
+                Some(Operator::RedirectAppend) => {
+                    let path = path::Path::new(&command_list.commands.get(i + 1).unwrap().command);
+                    cmd.stdout(Stdio::piped());
+                    let output = match cmd.output() {
+                        Ok(o) => o,
+                        Err(e) => {
+                            eprintln!("+ error while redirect append: {e:?}");
+                            return;
+                        }
+                    };
+                    let output_str = String::from_utf8_lossy(&output.stdout);
+                    if let Err(e) = self.file_writer.append_to_file(path, &output_str) {
+                        eprintln!("+ error appending to file: {e:?}");
+                        return;
+                    }
+
+                    skip_next = true;
+                    continue;
+                }
                 None => {
                     cmd.stdout(Stdio::inherit());
-                }
-                _ => {
-                    todo!();
                 }
             }
 

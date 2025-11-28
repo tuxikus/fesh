@@ -1,5 +1,5 @@
-// history_writer.rs is a workaround due to rustyline
-// isn't writing the history
+// history_writer.rs is a workaround because rustyline
+// isn't writing the history :(
 
 use std::fs::OpenOptions;
 use std::io::Write;
