@@ -2,23 +2,32 @@ use crate::command::command::Command;
 use crate::command::command_error::CommandError;
 use crate::command::command_list::CommandList;
 use crate::command::operator::Operator;
+use crate::logger;
 
-pub struct InputParser;
+pub struct InputParser {
+    pub logger: logger::Logger,
+}
 
 impl InputParser {
+    pub fn new() -> Self {
+        InputParser {
+            logger: logger::Logger::new(false),
+        }
+    }
+
     pub fn parse(&self, input: String) -> Result<CommandList, CommandError> {
         let operator_set = ["|", ">", ">>"];
         let mut commands: Vec<Command> = Vec::new();
         let mut operators: Vec<Operator> = Vec::new();
 
         if input.is_empty() {
+            self.logger.print_debug(String::from("InputParser"), format!("input is empty"));
             return Err(CommandError::Empty);
         }
 
         let mut current_cmd: Vec<String> = Vec::new();
 
         let parts = input.split_whitespace();
-
         for part in parts {
             if operator_set.contains(&part) {
                 if !current_cmd.is_empty() {
@@ -43,6 +52,8 @@ impl InputParser {
             commands.push(cmd);
         }
 
+        self.logger.print_debug(String::from("InputParser"), format!("commands: {:?}", commands));
+        self.logger.print_debug(String::from("InputParser"), format!("operators: {:?}", operators));
         Ok(CommandList::new(commands, operators))
     }
 }
@@ -54,7 +65,7 @@ mod tests {
 
     #[test]
     fn test_parse_empty_input() {
-        let parser = InputParser;
+        let parser = InputParser::new();
         let result = parser.parse(String::from(""));
         assert!(result.is_err());
         if let Err(e) = result {
@@ -64,7 +75,7 @@ mod tests {
 
     #[test]
     fn test_parse_simple_command() {
-        let parser = InputParser;
+        let parser = InputParser::new();
         let result = parser.parse(String::from("ls"));
         assert!(result.is_ok());
         let command_list = result.unwrap();
@@ -77,7 +88,7 @@ mod tests {
 
     #[test]
     fn test_parse_command_with_args() {
-        let parser = InputParser;
+        let parser = InputParser::new();
         let result = parser.parse(String::from("ls -la /tmp"));
         assert!(result.is_ok());
         let command_list = result.unwrap();
@@ -88,7 +99,7 @@ mod tests {
 
     #[test]
     fn test_parse_builtin_exit() {
-        let parser = InputParser;
+        let parser = InputParser::new();
         let result = parser.parse(String::from("exit"));
         assert!(result.is_ok());
         let command_list = result.unwrap();
@@ -98,7 +109,7 @@ mod tests {
 
     #[test]
     fn test_parse_builtin_debug() {
-        let parser = InputParser;
+        let parser = InputParser::new();
         let result = parser.parse(String::from("+debug"));
         assert!(result.is_ok());
         let command_list = result.unwrap();
@@ -108,7 +119,7 @@ mod tests {
 
     #[test]
     fn test_parse_command_with_pipe() {
-        let parser = InputParser;
+        let parser = InputParser::new();
         let result = parser.parse(String::from("ls | grep test"));
         assert!(result.is_ok());
         let command_list = result.unwrap();
@@ -122,7 +133,7 @@ mod tests {
 
     #[test]
     fn test_parse_command_with_redirect_overwrite() {
-        let parser = InputParser;
+        let parser = InputParser::new();
         let result = parser.parse(String::from("echo hello > output.txt"));
         assert!(result.is_ok());
         let command_list = result.unwrap();
@@ -136,7 +147,7 @@ mod tests {
 
     #[test]
     fn test_parse_command_with_redirect_append() {
-        let parser = InputParser;
+        let parser = InputParser::new();
         let result = parser.parse(String::from("echo hello >> output.txt"));
         assert!(result.is_ok());
         let command_list = result.unwrap();
@@ -147,7 +158,7 @@ mod tests {
 
     #[test]
     fn test_parse_multiple_commands_with_operators() {
-        let parser = InputParser;
+        let parser = InputParser::new();
         let result = parser.parse(String::from("ls -la | grep test | wc -l"));
         assert!(result.is_ok());
         let command_list = result.unwrap();
@@ -165,7 +176,7 @@ mod tests {
 
     #[test]
     fn test_parse_with_whitespace() {
-        let parser = InputParser;
+        let parser = InputParser::new();
         let result = parser.parse(String::from("  ls   -la   /tmp  "));
         assert!(result.is_ok());
         let command_list = result.unwrap();

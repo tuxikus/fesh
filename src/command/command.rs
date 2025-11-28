@@ -1,6 +1,6 @@
 use crate::command::command_type::CommandType;
 
-#[derive(Clone, PartialEq)]
+#[derive(Clone, PartialEq, Debug)]
 pub struct Command {
     pub command_type: CommandType,
     pub command: String,

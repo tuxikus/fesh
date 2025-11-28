@@ -41,9 +41,18 @@ impl Fesh {
             prompt: prompt::Prompt::new(prompt),
             logger: logger::Logger::new(logger_enabled),
             input_reader: input_reader::InputReader::new(),
-            input_parser: input_parser::InputParser {}, // TODO: add new fn
+            input_parser: input_parser::InputParser::new(),
             file_writer: file_writer::FileWriter::new(),
         }
+    }
+
+    fn toggle_logger(&mut self) {
+        self.logger.print_debug(String::from("Fesh"), format!("toggle debug logging"));
+        self.input_reader.logger.toggle_debug();
+        self.input_parser.logger.toggle_debug();
+        self.input_reader.history_writer.logger.toggle_debug();
+        self.file_writer.logger.toggle_debug();
+        self.logger.toggle_debug();
     }
 
     pub fn run(&mut self) {
@@ -58,58 +67,35 @@ impl Fesh {
     }
 
     // currently only first command can be a builtin
-    fn check_first_builtin(&self, command_list: &CommandList) {
+    fn check_first_builtin(&mut self, command_list: &CommandList) -> bool {
+        self.logger.print_debug(String::from("Fesh"), format!("checking for builtin"));
         if let Some(first_command) = command_list.commands.first() {
             if first_command.command_type == CommandType::Builtin {
-                self.execute_buitin(first_command.clone());
-                return;
+                return self.execute_buitin(first_command.clone());
             }
+            return false;
         }
+        return false;
     }
 
-    fn execute_buitin(&self, command_input: command::Command) {
+    fn execute_buitin(&mut self, command_input: command::Command) -> bool {
+        self.logger.print_debug(String::from("Fesh"), format!("executing builtin: {}", command_input.command));
         match command_input.command.as_str() {
             "exit" => {
                 exit(0);
             }
             "+debug" => {
-                println!("+prompt: {}", self.prompt.get());
+                self.toggle_logger();
+                return true;
             }
-            _ => {}
+            _ => false,
         }
     }
 
-    fn execute_external(&self, command_input: command::Command) {
-        println!("running external...");
-        let cmd = command_input.command;
-        let args = command_input.args;
-
-        let mut child = match SysCommand::new(&cmd).args(&args).spawn() {
-            Ok(c) => c,
-            Err(e) => {
-                eprintln!("failed to spawn child process <{cmd}>: {e}");
-                return;
-            }
-        };
-
-        if let Err(e) = child.wait() {
-            eprintln!("failed to wait for child process: {e}")
-        }
-    }
-
-    fn check_no_operators(&self, command_list: &CommandList) {
-        if command_list.operators.is_empty() {
-            println!("no operators");
-            if let Some(command) = command_list.commands.first() {
-                self.execute_external(command.clone());
-            }
-            return;
-        }
-    }
-
-    pub fn execute_command_list(&self, command_list: CommandList) {
-        self.check_first_builtin(&command_list);
-        //self.check_no_operators(&command_list);
+    pub fn execute_command_list(&mut self, command_list: CommandList) {
+        self.logger.print_debug(String::from("Fesh"), format!("executing command list: {:?}", command_list));
+        let is_builtin = self.check_first_builtin(&command_list);
+        if is_builtin { return }
 
         let mut prev_stdout: Option<Stdio> = None;
         let mut children = Vec::new();
@@ -136,21 +122,23 @@ impl Fesh {
 
             match operator {
                 Some(Operator::Pipe) => {
+                    self.logger.print_debug(String::from("Fesh"), format!("executing pipe"));
                     cmd.stdout(Stdio::piped());
                 }
                 Some(Operator::RedirectOverwrite) => {
                     let path = path::Path::new(&command_list.commands.get(i + 1).unwrap().command);
+                    self.logger.print_debug(String::from("Fesh"), format!("executing redirect overwrite to <{}>", path.display()));
                     cmd.stdout(Stdio::piped());
                     let output = match cmd.output() {
                         Ok(o) => o,
                         Err(e) => {
-                            eprintln!("+ error while redirect: {e:?}");
+                            self.logger.print_error(format!("error while redirect: {e:?}"));
                             return;
                         }
                     };
                     let output_str = String::from_utf8_lossy(&output.stdout);
                     if let Err(e) = self.file_writer.overwrite_file(path, &output_str) {
-                        eprintln!("+ error writing to file: {e:?}");
+                        self.logger.print_error(format!("error writing to file: {e:?}"));
                         return;
                     }
 
@@ -159,17 +147,18 @@ impl Fesh {
                 }
                 Some(Operator::RedirectAppend) => {
                     let path = path::Path::new(&command_list.commands.get(i + 1).unwrap().command);
+                    self.logger.print_debug(String::from("Fesh"), format!("executing redirect append to <{}>", path.display()));
                     cmd.stdout(Stdio::piped());
                     let output = match cmd.output() {
                         Ok(o) => o,
                         Err(e) => {
-                            eprintln!("+ error while redirect append: {e:?}");
+                            self.logger.print_error(format!("error while redirect append: {e:?}"));
                             return;
                         }
                     };
                     let output_str = String::from_utf8_lossy(&output.stdout);
                     if let Err(e) = self.file_writer.append_to_file(path, &output_str) {
-                        eprintln!("+ error appending to file: {e:?}");
+                        self.logger.print_error(format!("error appending to file: {e:?}"));
                         return;
                     }
 
@@ -184,7 +173,7 @@ impl Fesh {
             let mut child = match cmd.spawn() {
                 Ok(c) => c,
                 Err(e) => {
-                    eprintln!("failed to spawn child process <{}>: {e}", command.command);
+                    self.logger.print_error(format!("failed to spawn child process <{}>: {e}", command.command));
                     return;
                 }
             };
@@ -200,7 +189,7 @@ impl Fesh {
 
         for mut child in children {
             if let Err(e) = child.wait() {
-                eprintln!("failed to wait for child process: {e}");
+                self.logger.print_error(format!("failed to wait for child process: {e}"));
             }
         }
     }
