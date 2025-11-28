@@ -6,6 +6,7 @@
 - Redirects `> >>`: `echo hello-world > file.txt`
 - History
 - Builtins: `exit`, `+debug`, `cd`
+- Configuration via toml file, see [config.toml](./config.toml)
 
 ## Run the unit tests
 ```shell
