@@ -7,3 +7,5 @@ edition = "2024"
 clap = { version = "4.5.51", features = ["derive"] }
 colored = "3.0.0"
 rustyline = "17.0.2"
+serde = { version = "1.0.228", features = ["derive"] }
+toml = "0.9.8"
