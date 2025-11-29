@@ -5,7 +5,11 @@
 - Pipes `|`: `find . | wc -l`
 - Redirects `> >>`: `echo hello-world > file.txt`
 - History
-- Builtins: `exit`, `+debug`, `cd`
+- Builtins: 
+  - `exit`
+  - `+debug`: toggle debug mode
+  - `cd`
+  - `aliases`: list all defined aliases
 - Configuration via toml file, see [config.toml](./config.toml)
 
 ## Run the unit tests
