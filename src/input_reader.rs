@@ -30,7 +30,7 @@ impl InputReader {
         };
 
         if rl.load_history("history.txt").is_err() {
-            eprintln!("+no previous history found");
+            self.logger.print_debug(String::from("InputReader"), format!("no previous history found"));
         }
 
         let readline = rl.readline(&prompt.get_colored_prompt());
