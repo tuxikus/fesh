@@ -31,6 +31,24 @@ impl Fesh {
             logger: logger::Logger::new(false),
         }
     }
+    
+    pub fn run(&mut self) {
+        loop {
+            let input: String = self.input_reader.readline(&self.config.prompt);
+            let mut command_list: CommandList = match self.input_parser.parse(input) {
+                Ok(c) => c,
+                Err(_) => continue,
+            };
+
+            self.logger.print_debug(String::from("Fesh"), format!("command list before aliases: {:?}", command_list));
+
+            command_list.replace_aliases(&self.config.aliases);
+
+            self.logger.print_debug(String::from("Fesh"), format!("command list after aliases: {:?}", command_list));
+
+            self.execute_command_list(command_list);
+        }
+    }
 
     fn toggle_logger(&mut self) {
         self.logger.print_debug(String::from("Fesh"), format!("toggle debug logging"));
@@ -38,17 +56,7 @@ impl Fesh {
         self.input_parser.logger.toggle_debug();
         self.input_reader.history_writer.logger.toggle_debug();
         self.file_writer.logger.toggle_debug();
-    }
-
-    pub fn run(&mut self) {
-        loop {
-            let input: String = self.input_reader.readline(&self.config.prompt);
-            let command_list: CommandList = match self.input_parser.parse(input) {
-                Ok(c) => c,
-                Err(_) => continue,
-            };
-            self.execute_command_list(command_list);
-        }
+        self.logger.toggle_debug();
     }
 
     // currently only first command can be a builtin
@@ -66,6 +74,12 @@ impl Fesh {
     fn execute_buitin(&mut self, command_input: command::Command) -> bool {
         self.logger.print_debug(String::from("Fesh"), format!("executing builtin: {}", command_input.command));
         match command_input.command.as_str() {
+            "aliases" => {
+                self.config.aliases.iter().for_each(|(k, v)| {
+                    println!("{} -> {}", k, v);
+                });
+                return true;
+            },
             "cd" => {
                 if command_input.args.is_empty() {
                     self.logger.print_error(format!("cd: no argument provided"));
