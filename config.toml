@@ -4,9 +4,8 @@ text = "$ "           # prompt text
 color = "red"         # "black", "red", "green", "yellow", "blue", "magenta", "cyan", "white", "bright black", "bright red", "bright green", "bright yellow", "bright blue", "bright magenta", "bright cyan", "bright white"
 show_cwd = true       # show the current working directory
 show_username = false # show the username
-show_branch = false   # show the git branch
+show_branch = true    # show the git branch
 
 # here you can define aliases
 [aliases]
 ll = "ls -lah"
-
