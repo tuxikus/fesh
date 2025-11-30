@@ -13,19 +13,19 @@ use crate::input_reader;
 use crate::config;
 use crate::logger;
 
-pub struct Fesh {
-    config: config::Config,
-    input_reader: input_reader::InputReader,
+pub struct Fesh<'a> {
+    config: &'a config::Config,
+    input_reader: input_reader::InputReader<'a>,
     input_parser: input_parser::InputParser,
     file_writer: file_writer::FileWriter,
     logger: logger::Logger,
 }
 
-impl Fesh {
-    pub fn new(config: config::Config) -> Self {
+impl<'a> Fesh<'a> {
+    pub fn new(config: &'a config::Config) -> Self {
         Fesh {
             config: config,
-            input_reader: input_reader::InputReader::new(),
+            input_reader: input_reader::InputReader::new(&config.readline),
             input_parser: input_parser::InputParser::new(),
             file_writer: file_writer::FileWriter::new(),
             logger: logger::Logger::new(false),
@@ -54,7 +54,6 @@ impl Fesh {
         self.logger.print_debug(String::from("Fesh"), format!("toggle debug logging"));
         self.input_reader.logger.toggle_debug();
         self.input_parser.logger.toggle_debug();
-        self.input_reader.history_writer.logger.toggle_debug();
         self.file_writer.logger.toggle_debug();
         self.logger.toggle_debug();
     }
