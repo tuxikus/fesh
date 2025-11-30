@@ -9,3 +9,7 @@ show_branch = true    # show the git branch
 # here you can define aliases
 [aliases]
 ll = "ls -lah"
+
+# here you can configure the readline behavior
+[readline]
+edit_mode = "vi" # "emacs", "vi"

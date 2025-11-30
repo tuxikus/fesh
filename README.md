@@ -11,6 +11,9 @@
   - `cd`
   - `aliases`: list all defined aliases
 - Configuration via toml file, see [config.toml](./config.toml)
+  - prompt customization
+  - aliases
+  - `vi` and `emacs` edit modes
 
 ## Run the unit tests
 ```shell
