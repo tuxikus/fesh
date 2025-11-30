@@ -42,6 +42,12 @@ where
     }
 }
 
+fn get_branch() -> Result<String, git2::Error> {
+    let repo = git2::Repository::open(".")?;
+    let branch = repo.head()?;
+    Ok(branch.shorthand().ok_or(git2::Error::from_str("no branch found"))?.to_string())
+}
+
 impl Prompt {
     pub fn new(prompt: String, color: colored::Color, show_cwd: bool, show_user: bool, show_branch: bool) -> Self {
         Prompt { prompt, color, show_cwd, show_user, show_branch }
@@ -55,6 +61,9 @@ impl Prompt {
         }
         if self.show_user {
             prompt_parts.push(env::var("USER").unwrap_or_else(|_| "".to_string()));
+        }
+        if self.show_branch && get_branch().is_ok() {
+            prompt_parts.push(format!("[{}]", get_branch().unwrap()));
         }
         prompt_parts.push(self.prompt.clone());
 
