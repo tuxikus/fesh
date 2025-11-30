@@ -35,7 +35,10 @@ impl InputReader {
 
         let readline = rl.readline(&prompt.get_colored_prompt());
         match readline {
-            Ok(line) => line,
+            Ok(line) => {
+                self.history_writer.write(&line);
+                line
+            },
             // Ctrl + d
             Err(ReadlineError::Eof) => {
                 match rl.save_history("history.txt") {
