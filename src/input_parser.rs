@@ -1,3 +1,5 @@
+use std::env;
+
 use crate::command::command::Command;
 use crate::command::command_error::CommandError;
 use crate::command::command_list::CommandList;
@@ -43,7 +45,7 @@ impl InputParser {
                 };
                 operators.push(op);
             } else {
-                current_cmd.push(part.to_string());
+                current_cmd.push(Self::expand(part));
             }
         }
 
@@ -55,6 +57,54 @@ impl InputParser {
         self.logger.print_debug(String::from("InputParser"), format!("commands: {:?}", commands));
         self.logger.print_debug(String::from("InputParser"), format!("operators: {:?}", operators));
         Ok(CommandList::new(commands, operators))
+    }
+
+    fn expand(input: &str) -> String {
+        let expanded = Self::expand_tilde(input);
+        Self::expand_env_vars(&expanded)
+    }
+
+    fn expand_tilde(input: &str) -> String {
+        if input == "~" {
+            env::var("HOME").unwrap_or_else(|_| input.to_string())
+        } else if input.starts_with("~/") {
+            if let Ok(home) = env::var("HOME") {
+                format!("{}{}", home, &input[1..])
+            } else {
+                input.to_string()
+            }
+        } else {
+            input.to_string()
+        }
+    }
+
+    fn expand_env_vars(input: &str) -> String {
+        let mut result = input.to_string();
+        let mut i = 0;
+
+        while let Some(start) = result[i..].find('$') {
+            let start = start + i;
+            let rest = &result[start + 1..];
+
+            let end = rest
+                .find(|c: char| !c.is_alphanumeric() && c != '_')
+                .unwrap_or(rest.len());
+
+            if end == 0 {
+                i = start + 1;
+                continue;
+            }
+
+            let var_name = &rest[..end];
+            if let Ok(value) = env::var(var_name) {
+                result = format!("{}{}{}", &result[..start], value, &rest[end..]);
+                i = start + value.len();
+            } else {
+                i = start + 1 + end;
+            }
+        }
+
+        result
     }
 }
 
