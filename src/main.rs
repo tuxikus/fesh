@@ -15,11 +15,7 @@ use fesh::Fesh;
 
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
-struct Args {
-    /// d = debug, i = interactive (default)
-    #[arg(short, long)]
-    mode: Option<char>,
-}
+struct Args {}
 
 fn parse_args() -> Args {
     Args::parse()
