@@ -1,34 +1,87 @@
-# fesh - the Fe (ferrum) shell
-`fesh` is a simple shell implemented in Rust. This project was created as part of a university course and aims to help deepen my understanding of both shells and the Rust programming language 🤓
+# fesh ⚙️
+A simple shell implemented in Rust. *fesh* stands for **Fe** (ferrum) **sh**ell.
+This project was created as part of a university course to deepen my understanding of both shells and the Rust programming language 🤓
 
 ## Features
-- Pipes `|`: `find . | wc -l`
-- Redirects `> >>`: `echo hello-world > file.txt`
-- History
-  - completion
-  - search via `i-search`
-- Builtins: 
-  - `exit`
-  - `+debug`: toggle debug mode
-  - `cd`
-  - `aliases`: list all defined aliases
-- Configuration via toml file, see [config.toml](./config.toml)
-  - prompt customization
-    - color
-    - cwd
-    - current user
-    - current git branch
-  - aliases
-  - `vi` and `emacs` edit modes
-  - custom history file path, defaults to `$XDG_DATA_DIR/fesh/history` (or `$HOME/.local/share/fesh/history`)
 
-# Development
-
-## Run the unit tests
+### Pipes
+Chain commands together using pipes:
 ```shell
-$ cargo test
+find . | wc -l
+cat file.txt | grep "pattern" | sort
+```
 
-# or use nextest for a better ui
-$ cargo install cargo-nextest --locked
-$ cargo nextest run
+### Redirects
+Redirect output to files:
+```shell
+echo "hello world" > file.txt   # overwrite
+echo "another line" >> file.txt # append
+```
+
+### History
+- Store recent commands in a history file
+- Completion hints as you type
+- Search with `Ctrl+R` (i-search)
+
+### Builtin Commands
+| Command | Description |
+|---------|-------------|
+| `cd <dir>` | Change directory |
+| `exit` | Exit the shell |
+| `aliases` | List all defined aliases |
+| `+debug` | Toggle debug mode |
+
+## Configuration
+
+`fesh` uses a [TOML](https://toml.io/en/) config file for customization. See [config.toml](./config.toml) for full reference.
+
+### Config Location
+The config file is located at:
+- `$XDG_CONFIG_HOME/fesh/config.toml`
+- Falls back to `~/.config/fesh/config.toml`
+
+If no config file is found, fesh uses default settings and shows an info message at startup.
+
+Override with the `FESH_CONFIG_FILE` environment variable:
+```shell
+FESH_CONFIG_FILE=/path/to/config.toml fesh
+```
+
+### Config Options
+
+**Prompt**
+- `text` - prompt text (e.g. `"$ "`)
+- `color` - prompt color
+- `show_cwd` - show current working directory
+- `show_username` - show username
+- `show_branch` - show current git branch
+
+**Aliases**
+```toml
+[aliases]
+ll = "ls -lah"
+gs = "git status"
+```
+
+**Readline**
+- `edit_mode` - `"emacs"` or `"vi"`
+
+**History**
+- `history_path` - absolute path to history file
+- Defaults to `$XDG_DATA_HOME/fesh/history` (or `~/.local/share/fesh/history`)
+
+## Development
+
+### Build
+```shell
+cargo build
+```
+
+### Run tests
+```shell
+cargo test
+
+# or use nextest for better output
+cargo install cargo-nextest --locked
+cargo nextest run
 ```
