@@ -5,6 +5,7 @@
 - Pipes `|`: `find . | wc -l`
 - Redirects `> >>`: `echo hello-world > file.txt`
 - History
+  - search via `i-search`
 - Builtins: 
   - `exit`
   - `+debug`: toggle debug mode
@@ -12,8 +13,14 @@
   - `aliases`: list all defined aliases
 - Configuration via toml file, see [config.toml](./config.toml)
   - prompt customization
+    - color
+    - cwd
+    - current user
+    - current git branch
   - aliases
   - `vi` and `emacs` edit modes
+
+# Development
 
 ## Run the unit tests
 ```shell
