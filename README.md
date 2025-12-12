@@ -29,6 +29,7 @@ echo "another line" >> file.txt # append
 | `cd <dir>` | Change directory |
 | `exit` | Exit the shell |
 | `aliases` | List all defined aliases |
+| `set <VAR> <VALUE>` | Set an environment variable |
 | `+debug` | Toggle debug mode |
 
 ## Configuration
@@ -69,6 +70,13 @@ gs = "git status"
 **History**
 - `history_path` - absolute path to history file
 - Defaults to `$XDG_DATA_HOME/fesh/history` (or `~/.local/share/fesh/history`)
+
+**Environment Variables**
+```toml
+[env]
+EDITOR = "vim"
+MY_VAR = "my_value"
+```
 
 ## Development
 

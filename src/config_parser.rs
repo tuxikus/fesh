@@ -17,6 +17,8 @@ show_branch = true
 
 [readline]
 edit_mode = "emacs"
+
+[env]
 "#;
 
 pub struct ConfigParser {

@@ -8,10 +8,13 @@ use std::path::PathBuf;
 #[derive(Deserialize)]
 pub struct Config {
     pub prompt: prompt::Prompt,
+    #[serde(default)]
     pub aliases: HashMap<String, String>,
     pub readline: ReadlineConfig,
     #[serde(default)]
     pub history: HistoryConfig,
+    #[serde(default)]
+    pub env: HashMap<String, String>,
 }
 
 #[derive(Deserialize)]

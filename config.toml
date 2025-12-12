@@ -17,3 +17,8 @@ edit_mode = "emacs" # "emacs", "vi"
 # here you can configure the history behavior (path must be absolute, no ~ or $HOME)
 # [history]
 # history_path = "/path/to/history"  # defaults to $XDG_DATA_HOME/fesh/history
+
+# here you can define environment variables
+[env]
+FOO = "bar"
+# EDITOR = "vim"
