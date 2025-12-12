@@ -1,19 +1,17 @@
-<table>
-<tr>
-<td>
+<div style="display: table; width: 100%;">
+  <div style="display: table-cell; vertical-align: top;">
 
 # fesh ⚙️
 A simple shell implemented in Rust. *fesh* stands for **Fe** (ferrum) **sh**ell.
 This project was created as part of a university course to deepen my understanding of both shells and the Rust programming language 🤓
 
-</td>
-<td align="right">
+  </div>
+  <div style="display: table-cell; text-align: right; width: 200px;">
+  
+<img src="assets/fesh-logo.png" alt="FESH Logo" width="200">
 
-<img src="assets/fesh-logo.png" alt="fesh Logo" width="200">
-
-</td>
-</tr>
-</table>
+  </div>
+</div>
 
 ## Features
 
