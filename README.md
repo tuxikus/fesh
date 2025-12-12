@@ -1,6 +1,19 @@
+<table>
+<tr>
+<td>
+
 # fesh ⚙️
 A simple shell implemented in Rust. *fesh* stands for **Fe** (ferrum) **sh**ell.
 This project was created as part of a university course to deepen my understanding of both shells and the Rust programming language 🤓
+
+</td>
+<td align="right">
+
+<img src="assets/fesh-logo.png" alt="fesh Logo" width="200">
+
+</td>
+</tr>
+</table>
 
 ## Features
 
