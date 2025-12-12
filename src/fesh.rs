@@ -25,7 +25,7 @@ impl<'a> Fesh<'a> {
     pub fn new(config: &'a config::Config) -> Self {
         Fesh {
             config: config,
-            input_reader: input_reader::InputReader::new(&config.readline),
+            input_reader: input_reader::InputReader::new(&config.readline, &config.history),
             input_parser: input_parser::InputParser::new(),
             file_writer: file_writer::FileWriter::new(),
             logger: logger::Logger::new(false),

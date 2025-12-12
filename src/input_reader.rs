@@ -1,4 +1,6 @@
 use std::borrow::Cow::{self, Owned};
+use std::fs;
+use std::path::PathBuf;
 use std::process::exit;
 
 use rustyline::Editor;
@@ -45,13 +47,15 @@ impl Highlighter for FeshHelper {
 pub struct InputReader<'a> {
     pub logger: logger::Logger,
     readline_config: &'a config::ReadlineConfig,
+    history_path: PathBuf,
 }
 
 impl<'a> InputReader<'a> {
-    pub fn new(config: &'a config::ReadlineConfig) -> Self {
+    pub fn new(readline_config: &'a config::ReadlineConfig, history_config: &config::HistoryConfig) -> Self {
         InputReader {
             logger: logger::Logger::new(false),
-            readline_config: config,
+            readline_config,
+            history_path: history_config.history_path.clone(),
         }
     }
 
@@ -84,29 +88,38 @@ impl<'a> InputReader<'a> {
 
         rl.set_helper(Some(helper));
 
-        if rl.load_history("history.txt").is_err() {
+        if rl.load_history(&self.history_path).is_err() {
             self.logger.print_debug(String::from("InputReader"), format!("no previous history found"));
         }
 
         let readline = rl.readline(&prompt.get_colored_prompt());
         match readline {
             Ok(line) => {
-                rl.add_history_entry(line.as_str());
-                match rl.save_history("history.txt") {
-                    Ok(_) => (),
-                    Err(e) => eprintln!("+history cant be saved: {e}"),
-                }
+                let _ = rl.add_history_entry(line.as_str());
+                self.save_history(&mut rl);
                 line
             },
             // Ctrl + d
             Err(ReadlineError::Eof) => {
-                match rl.save_history("history.txt") {
-                    Ok(_) => (),
-                    Err(e) => eprintln!("+history cant be saved: {e}"),
-                }
+                self.save_history(&mut rl);
                 exit(0);
             }
             _ => "".to_string(),
+        }
+    }
+
+    fn save_history<H: rustyline::Helper>(&self, rl: &mut Editor<H, rustyline::history::DefaultHistory>) {
+        if let Some(parent) = self.history_path.parent() {
+            if !parent.exists() {
+                if let Err(e) = fs::create_dir_all(parent) {
+                    self.logger.print_debug(String::from("InputReader"), format!("history directory cant be created: {e}"));
+                    return;
+                }
+            }
+        }
+        
+        if let Err(e) = rl.save_history(&self.history_path) {
+            self.logger.print_debug(String::from("InputReader"), format!("history cant be saved: {e}"));
         }
     }
 }

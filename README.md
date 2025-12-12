@@ -5,6 +5,7 @@
 - Pipes `|`: `find . | wc -l`
 - Redirects `> >>`: `echo hello-world > file.txt`
 - History
+  - completion
   - search via `i-search`
 - Builtins: 
   - `exit`
@@ -19,6 +20,7 @@
     - current git branch
   - aliases
   - `vi` and `emacs` edit modes
+  - custom history file path, defaults to `$XDG_DATA_DIR/fesh/history` (or `$HOME/.local/share/fesh/history`)
 
 # Development
 
