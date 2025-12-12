@@ -20,5 +20,5 @@ edit_mode = "emacs" # "emacs", "vi"
 
 # here you can define environment variables
 [env]
-FOO = "bar"
+# FOO = "bar"
 # EDITOR = "vim"
